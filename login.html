@@ -3,166 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autenticación - STI RAG</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#f4f6f8] h-screen flex items-center justify-center font-sans">
-    
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-gray-100 relative overflow-hidden min-h-[450px] flex flex-col justify-center">
-        
-        <div class="flex justify-center mb-6">
-            <div class="bg-gray-900 text-white font-bold text-xl px-4 py-2 rounded-lg flex items-center gap-2">
-                <span class="bg-white text-gray-900 rounded px-1 text-sm">Aª</span> RAG Dashboard
-            </div>
-        </div>
-
-        <!-- VISTA 1: INICIO DE SESIÓN -->
-        <div id="vista-login">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar Sesión</h2>
-            <form id="form-login">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
-                    <input type="email" id="login-correo" class="shadow-sm border rounded w-full py-3 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ejemplo@correo.com" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
-                    <input type="password" id="login-password" class="shadow-sm border rounded w-full py-3 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="bg-[#1a73e8] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded w-full transition duration-200">
-                    Ingresar al Sistema
-                </button>
-                
-                <p class="text-center text-sm text-gray-600 mt-5">
-                    ¿No tienes cuenta? <a href="#" onclick="mostrarVista('vista-registro')" class="text-[#1a73e8] hover:underline font-bold">Regístrate aquí</a>
-                </p>
-            </form>
-        </div>
-
-        <!-- VISTA 2: REGISTRO -->
-        <div id="vista-registro" class="hidden">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Crear Cuenta</h2>
-            <p class="text-sm text-gray-500 text-center mb-6">Crea tu contraseña y recibe un código en tu correo para verificar tu identidad.</p>
-            
-            <form id="form-registro">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Correo Institucional / Personal</label>
-                    <input type="email" id="registro-correo" class="shadow-sm border rounded w-full py-3 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ejemplo@correo.com" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Crea tu Contraseña</label>
-                    <input type="password" id="registro-password" class="shadow-sm border rounded w-full py-3 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••" required>
-                </div>
-                <button type="submit" id="btn-enviar-codigo" class="bg-[#10b981] hover:bg-green-600 text-white font-bold py-3 px-4 rounded w-full transition duration-200">
-                    Enviar Código al Correo
-                </button>
-                <p class="text-center text-sm text-gray-600 mt-5">
-                    ¿Ya tienes cuenta? <a href="#" onclick="mostrarVista('vista-login')" class="text-[#1a73e8] hover:underline font-bold">Inicia Sesión</a>
-                </p>
-            </form>
-        </div>
-
-        <!-- VISTA 3: VERIFICACIÓN -->
-        <div id="vista-verificacion" class="hidden">
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Verificar Correo</h2>
-            <p class="text-sm text-gray-500 text-center mb-6">Ingresa el código de 6 dígitos que acabamos de enviar a tu bandeja de entrada.</p>
-            
-            <form id="form-verificacion">
-                <div class="mb-6 flex justify-center">
-                    <input type="text" id="codigo-otp" maxlength="6" class="shadow-sm border rounded w-3/4 py-3 px-3 text-gray-700 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="000000" required>
-                </div>
-                <button type="submit" class="bg-[#1a73e8] hover:bg-blue-600 text-white font-bold py-3 px-4 rounded w-full transition duration-200">
-                    Verificar y Activar Cuenta
-                </button>
-                <p class="text-center text-sm text-gray-600 mt-5">
-                    <a href="#" onclick="mostrarVista('vista-registro')" class="text-gray-500 hover:underline">Cambiar correo electrónico</a>
-                </p>
-            </form>
-        </div>
-
-    </div>
-
-    <!-- SCRIPT DE LÓGICA Y CONEXIÓN AL BACKEND -->
-    <script>
-        const API_URL = 'http://127.0.0.1:8000';
-        let correoTemporal = '';
-
-        function mostrarVista(idVista) {
-            document.getElementById('vista-login').classList.add('hidden');
-            document.getElementById('vista-registro').classList.add('hidden');
-            document.getElementById('vista-verificacion').classList.add('hidden');
-            
-            document.getElementById(idVista).classList.remove('hidden');
+    <title>Acceso - RAG Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        // 1. INICIO DE SESIÓN
-        document.getElementById('form-login').addEventListener('submit', async function(e) {
-            e.preventDefault(); 
-            
-            const correo = document.getElementById('login-correo').value;
-            const password = document.getElementById('login-password').value;
-            
-            try {
-                const response = await fetch(`${API_URL}/login?correo=${correo}&password=${password}`, { method: 'POST' });
-                const data = await response.json();
-                
-                if (data.mensaje) {
-                    window.location.href = 'dashboard.html'; 
-                } else {
-                    alert("❌ Acceso Denegado: " + data.error);
-                }
-            } catch (error) {
-                alert("Error de conexión. Revisa que el backend (FastAPI) esté encendido.");
+        body {
+            background-color: #f4f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #0b1120;
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        .badge span {
+            background: #ffffff;
+            color: #0b1120;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        h2 {
+            color: #111827;
+            font-size: 24px;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1f2937;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #0066ff;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: #0066ff;
+            color: white;
+            border: none;
+            padding: 13px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #0052cc;
+        }
+
+        .btn:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .switch-link {
+            margin-top: 22px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .switch-link a {
+            color: #0066ff;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .switch-link a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .msg {
+            margin-top: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .msg.error {
+            display: block;
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .msg.success {
+            display: block;
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="badge"><span>Aa</span> RAG Dashboard</div>
+
+    <!-- 1. VISTA DE INICIO DE SESIÓN -->
+    <div id="vista-login">
+        <h2>Iniciar Sesión</h2>
+        <div class="form-group">
+            <label for="login-correo">Correo Electrónico</label>
+            <input type="email" id="login-correo" placeholder="tucorreo@ejemplo.com" required>
+        </div>
+        <div class="form-group">
+            <label for="login-password">Contraseña</label>
+            <input type="password" id="login-password" placeholder="••••••••" required>
+        </div>
+        <button class="btn" id="btn-login" onclick="iniciarSesion()">Ingresar al Sistema</button>
+        <div class="switch-link">
+            ¿No tienes cuenta? <a onclick="cambiarVista('registro')">Regístrate aquí</a>
+        </div>
+    </div>
+
+    <!-- 2. VISTA DE REGISTRO (CON CONTRASEÑA PERSONALIZADA) -->
+    <div id="vista-registro" class="hidden">
+        <h2>Crear Cuenta</h2>
+        <div class="form-group">
+            <label for="reg-correo">Correo Electrónico</label>
+            <input type="email" id="reg-correo" placeholder="tucorreo@ejemplo.com" required>
+        </div>
+        <div class="form-group">
+            <label for="reg-password">Crea tu Contraseña</label>
+            <input type="password" id="reg-password" placeholder="Escribe tu contraseña" required>
+        </div>
+        <button class="btn" id="btn-registro" onclick="solicitarCodigo()">Enviar Código de Verificación</button>
+        <div class="switch-link">
+            ¿Ya tienes cuenta? <a onclick="cambiarVista('login')">Inicia sesión aquí</a>
+        </div>
+    </div>
+
+    <!-- 3. VISTA DE VERIFICACIÓN OTP -->
+    <div id="vista-verificar" class="hidden">
+        <h2>Verificar Código</h2>
+        <p style="font-size: 13px; color: #6b7280; margin-bottom: 18px;">
+            Ingresa el código de 6 dígitos que enviamos a tu correo electrónico.
+        </p>
+        <div class="form-group">
+            <label for="otp-codigo">Código de 6 dígitos</label>
+            <input type="text" id="otp-codigo" placeholder="123456" maxlength="6" required>
+        </div>
+        <button class="btn" id="btn-verificar" onclick="verificarCodigo()">Verificar y Activar Cuenta</button>
+        <div class="switch-link">
+            <a onclick="cambiarVista('registro')">Volver atrás</a>
+        </div>
+    </div>
+
+    <!-- MENSAJES DE ESTADO -->
+    <div id="mensaje-estado" class="msg"></div>
+</div>
+
+<script>
+    // URL conectada directamente a tu servidor en Render
+    const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
+
+    let correoEnProceso = '';
+
+    function mostrarMensaje(texto, tipo) {
+        const msgDiv = document.getElementById('mensaje-estado');
+        msgDiv.textContent = texto;
+        msgDiv.className = 'msg ' + tipo;
+    }
+
+    function limpiarMensaje() {
+        const msgDiv = document.getElementById('mensaje-estado');
+        msgDiv.className = 'msg';
+        msgDiv.textContent = '';
+    }
+
+    function cambiarVista(vista) {
+        limpiarMensaje();
+        document.getElementById('vista-login').classList.add('hidden');
+        document.getElementById('vista-registro').classList.add('hidden');
+        document.getElementById('vista-verificar').classList.add('hidden');
+
+        if (vista === 'login') {
+            document.getElementById('vista-login').classList.remove('hidden');
+        } else if (vista === 'registro') {
+            document.getElementById('vista-registro').classList.remove('hidden');
+        } else if (vista === 'verificar') {
+            document.getElementById('vista-verificar').classList.remove('hidden');
+        }
+    }
+
+    // 1. FUNCIÓN PARA INICIAR SESIÓN
+    async function iniciarSesion() {
+        const correo = document.getElementById('login-correo').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const btn = document.getElementById('btn-login');
+
+        if (!correo || !password) {
+            mostrarMensaje('Por favor, completa todos los campos.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Conectando...';
+        limpiarMensaje();
+
+        try {
+            const url = `${API_URL}/login?correo=${encodeURIComponent(correo)}&password=${encodeURIComponent(password)}`;
+            const respuesta = await fetch(url, { method: 'POST' });
+            const datos = await respuesta.json();
+
+            if (respuesta.ok && !datos.error) {
+                mostrarMensaje('¡Acceso correcto! Redirigiendo...', 'success');
+                localStorage.setItem('usuario_correo', correo);
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            } else {
+                mostrarMensaje(datos.error || datos.detail || 'Credenciales incorrectas.', 'error');
             }
-        });
+        } catch (error) {
+            mostrarMensaje('Error al conectar con el servidor en la nube.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Ingresar al Sistema';
+        }
+    }
 
-        // 2. REGISTRO (Envía correo y nueva contraseña)
-        document.getElementById('form-registro').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-enviar-codigo');
-            correoTemporal = document.getElementById('registro-correo').value;
-            const passwordRegistro = document.getElementById('registro-password').value;
-            
-            btn.innerText = "Enviando correo...";
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
+    // 2. FUNCIÓN PARA REGISTRAR USUARIO Y ENVIAR CÓDIGO
+    async function solicitarCodigo() {
+        const correo = document.getElementById('reg-correo').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const btn = document.getElementById('btn-registro');
 
-            try {
-                const response = await fetch(`${API_URL}/solicitar-codigo?correo=${correoTemporal}&password=${passwordRegistro}`, { method: 'POST' });
-                const data = await response.json();
-                
-                if (data.mensaje) {
-                    mostrarVista('vista-verificacion');
-                } else {
-                    alert("Error: " + data.error);
-                }
-            } catch (error) {
-                alert("Error al conectar con el servidor.");
-            } finally {
-                btn.innerText = "Enviar Código al Correo";
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
+        if (!correo || !password) {
+            mostrarMensaje('Ingresa tu correo y crea una contraseña.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Enviando código...';
+        limpiarMensaje();
+
+        try {
+            const url = `${API_URL}/solicitar-codigo?correo=${encodeURIComponent(correo)}&password=${encodeURIComponent(password)}`;
+            const respuesta = await fetch(url, { method: 'POST' });
+            const datos = await respuesta.json();
+
+            if (respuesta.ok && !datos.error) {
+                correoEnProceso = correo;
+                cambiarVista('verificar');
+                mostrarMensaje('Código enviado a tu correo.', 'success');
+            } else {
+                mostrarMensaje(datos.error || datos.detail || 'No se pudo enviar el código.', 'error');
             }
-        });
+        } catch (error) {
+            mostrarMensaje('Error al conectar con el servidor.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enviar Código de Verificación';
+        }
+    }
 
-        // 3. VERIFICAR CÓDIGO
-        document.getElementById('form-verificacion').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const codigo = document.getElementById('codigo-otp').value;
+    // 3. FUNCIÓN PARA VERIFICAR EL CÓDIGO OTP
+    async function verificarCodigo() {
+        const codigo = document.getElementById('otp-codigo').value.trim();
+        const btn = document.getElementById('btn-verificar');
 
-            try {
-                const response = await fetch(`${API_URL}/verificar-codigo?correo=${correoTemporal}&codigo_ingresado=${codigo}`, { method: 'POST' });
-                const data = await response.json();
-                
-                if (data.mensaje) {
-                    alert("¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.");
-                    mostrarVista('vista-login');
-                } else {
-                    alert("Error: " + (data.error || "Código incorrecto"));
-                }
-            } catch (error) {
-                alert("Error al conectar con el servidor.");
+        if (!codigo) {
+            mostrarMensaje('Ingresa el código de 6 dígitos.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Verificando...';
+        limpiarMensaje();
+
+        try {
+            const url = `${API_URL}/verificar-codigo?correo=${encodeURIComponent(correoEnProceso)}&codigo=${encodeURIComponent(codigo)}`;
+            const respuesta = await fetch(url, { method: 'POST' });
+            const datos = await respuesta.json();
+
+            if (respuesta.ok && !datos.error) {
+                cambiarVista('login');
+                document.getElementById('login-correo').value = correoEnProceso;
+                mostrarMensaje('¡Cuenta verificada! Ya puedes iniciar sesión con tu contraseña.', 'success');
+            } else {
+                mostrarMensaje(datos.error || datos.detail || 'Código inválido o incorrecto.', 'error');
             }
-        });
-    </script>
+        } catch (error) {
+            mostrarMensaje('Error al verificar el código.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Verificar y Activar Cuenta';
+        }
+    }
+</script>
+
 </body>
 </html>

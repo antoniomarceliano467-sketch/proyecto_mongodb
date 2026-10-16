@@ -2,159 +2,436 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Estudiantes - RAG</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#f4f6f8] font-sans flex h-screen overflow-hidden">
-
-    <!-- BARRA LATERAL (Sidebar) -->
-    <aside class="w-64 bg-[#1e293b] text-white flex flex-col h-full">
-        <div class="p-6 flex items-center gap-3 mb-6">
-            <span class="bg-white text-gray-900 rounded px-2 py-1 font-bold">Aª</span>
-            <span class="font-bold text-xl">RAG Dashboard</span>
-        </div>
-        <nav class="flex-1 px-4 space-y-2">
-            <a href="#" class="block px-4 py-3 rounded text-gray-400 hover:text-white">Dashboard</a>
-            <a href="#" class="block px-4 py-3 rounded text-gray-400 hover:text-white">Chatbot</a>
-            <a href="#" class="block px-4 py-3 rounded bg-blue-600 text-white font-semibold">Estudiantes</a>
-        </nav>
-    </aside>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 p-10 overflow-y-auto relative">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Gestión de Estudiantes</h1>
-            <button onclick="abrirModal()" class="bg-[#1a73e8] hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                + Nuevo Estudiante
-            </button>
-        </div>
-
-        <!-- TABLA -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-gray-200 text-sm text-gray-600">
-                        <th class="p-4 font-semibold text-center">Matrícula</th>
-                        <th class="p-4 font-semibold text-center">Grado</th>
-                        <th class="p-4 font-semibold text-center">Nivel de Lectura</th>
-                        <th class="p-4 font-semibold text-center">Fecha de Registro</th>
-                        <th class="p-4 font-semibold text-center">Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-estudiantes" class="text-sm">
-                    <!-- Aquí se inyectan los datos desde FastAPI -->
-                </tbody>
-            </table>
-        </div>
-    </main>
-
-    <!-- MODAL REGISTRO (Fondo Oscuro) -->
-    <div id="modalRegistro" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-        <!-- Contenedor del Modal -->
-        <div class="bg-white rounded-xl shadow-lg w-[600px] p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">Registrar Estudiante</h2>
-                <button onclick="cerrarModal()" class="text-gray-500 hover:text-gray-800 text-xl font-bold">&times;</button>
-            </div>
-
-            <form id="formEstudiante" class="grid grid-cols-2 gap-6">
-                <!-- Columna Izquierda -->
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Matrícula</label>
-                    <input type="text" id="inputMatricula" class="border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500" required>
-                    
-                    <label class="block text-gray-700 text-sm font-bold mb-2 mt-4">Grado</label>
-                    <select id="inputGrado" class="border rounded w-full py-2 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500">
-                        <option>1er Semestre</option>
-                        <option>3er Semestre</option>
-                        <option>5to Semestre</option>
-                    </select>
-                </div>
-                <!-- Columna Derecha -->
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nivel de Lectura</label>
-                    <select id="inputNivel" class="border rounded w-full py-2 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500">
-                        <option>Básico</option>
-                        <option>Intermedio</option>
-                        <option>Avanzado</option>
-                    </select>
-                    
-                    <label class="block text-gray-700 text-sm font-bold mb-2 mt-4">Estado</label>
-                    <select id="inputEstado" class="border rounded w-full py-2 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500">
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
-                    </select>
-                </div>
-
-                <!-- Botones Pie de ventana -->
-                <div class="col-span-2 flex justify-end gap-3 mt-4">
-                    <button type="button" onclick="cerrarModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
-                    <button type="submit" class="bg-[#1a73e8] hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SCRIPT DE CONEXIÓN A FASTAPI -->
-    <script>
-        const API_URL = 'http://127.0.0.1:8000';
-
-        // 1. Mostrar y Ocultar el Modal
-        function abrirModal() { document.getElementById('modalRegistro').style.display = 'flex'; }
-        function cerrarModal() { document.getElementById('modalRegistro').style.display = 'none'; }
-
-        // 2. Leer Estudiantes (GET) y pintar la tabla
-        async function cargarEstudiantes() {
-            try {
-                const respuesta = await fetch(`${API_URL}/estudiantes`);
-                const datos = await respuesta.json();
-                const tbody = document.getElementById('tabla-estudiantes');
-                tbody.innerHTML = ''; 
-
-                datos.estudiantes.forEach(est => {
-                    let fecha = est.fecha_registro.split(' ')[0];
-                    let estadoClass = est.estado.toLowerCase() === 'activo' ? 'bg-[#d4edda] text-[#155724]' : 'bg-gray-200 text-gray-600';
-                    
-                    tbody.innerHTML += `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50 text-center">
-                            <td class="p-4 font-bold">${est.matricula}</td>
-                            <td class="p-4">${est.grado}</td>
-                            <td class="p-4">${est.nivel_inicial_lectura}</td>
-                            <td class="p-4">${fecha}</td>
-                            <td class="p-4">
-                                <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${est.estado}</span>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (error) { console.error("Error al cargar Atlas:", error); }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - RAG Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        // 3. Crear Nuevo Estudiante (POST) desde el Modal
-        document.getElementById('formEstudiante').addEventListener('submit', async function(e) {
-            e.preventDefault(); // Evita que recargue la página
+        body {
+            background-color: #f4f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        /* BARRA SUPERIOR */
+        .navbar {
+            background-color: #0b1120;
+            color: #ffffff;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .brand span {
+            background: #ffffff;
+            color: #0b1120;
+            padding: 3px 7px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: #dc2626;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: #111827;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 10px;
+        }
+
+        /* ESTADO DEL SERVIDOR */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.online {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-badge.offline {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* FORMULARIO */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #0066ff;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: #0066ff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0052cc;
+        }
+
+        /* TABLA DE ESTUDIANTES */
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-refresh {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-refresh:hover {
+            background-color: #e5e7eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .msg {
+            margin-top: 12px;
+            font-size: 13px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .msg.success {
+            display: block;
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .msg.error {
+            display: block;
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar">
+        <div class="brand">
+            <span>Aa</span> RAG Dashboard
+        </div>
+        <div class="user-info">
+            <span id="usuario-actual">Cargando usuario...</span>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container">
+        
+        <!-- COLUMNA IZQUIERDA: ESTADO Y REGISTRO -->
+        <div>
+            <div class="card">
+                <h3>Estado de la Nube (Render)</h3>
+                <div id="estado-servidor" class="status-badge">
+                    Verificando conexión...
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Registrar Estudiante</h3>
+                <div class="form-group">
+                    <label for="est-nombre">Nombre Completo</label>
+                    <input type="text" id="est-nombre" placeholder="Ej. Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label for="est-carrera">Carrera / Especialidad</label>
+                    <input type="text" id="est-carrera" placeholder="Ej. Ingeniería en Sistemas">
+                </div>
+                <div class="form-group">
+                    <label for="est-semestre">Semestre / Grado</label>
+                    <input type="number" id="est-semestre" placeholder="Ej. 5">
+                </div>
+                <button class="btn-primary" id="btn-guardar" onclick="insertarEstudiante()">Guardar en MongoDB</button>
+                <div id="mensaje-form" class="msg"></div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: LISTA DE DATOS EN MONGODB -->
+        <div>
+            <div class="card">
+                <div class="table-header">
+                    <h3 style="margin: 0; border: none; padding: 0;">Estudiantes en Base de Datos</h3>
+                    <button class="btn-refresh" onclick="obtenerEstudiantes()">🔄 Actualizar lista</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Carrera / Info</th>
+                                <th>Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-estudiantes">
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: #6b7280;">Cargando registros desde MongoDB...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // URL conectada directamente a tu servidor en Render
+        const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
+
+        // Verificar sesión al abrir la página
+        window.onload = function() {
+            const correo = localStorage.getItem('usuario_correo');
+            if (!correo) {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('usuario-actual').textContent = correo;
             
-            // Recolectar datos del formulario
-            const matricula = document.getElementById('inputMatricula').value;
-            const grado = document.getElementById('inputGrado').value;
-            const nivel = document.getElementById('inputNivel').value;
-            const estado = document.getElementById('inputEstado').value;
+            verificarServidor();
+            obtenerEstudiantes();
+        };
 
-            // Enviar a FastAPI usando los parámetros de query (como lo programamos)
+        // 1. COMPROBAR ESTADO DEL SERVIDOR (/estado-servidor)
+        async function verificarServidor() {
+            const badge = document.getElementById('estado-servidor');
             try {
-                await fetch(`${API_URL}/insertar-estudiante?matricula=${matricula}&grado=${grado}&nivel_lectura=${nivel}&estado=${estado}`, {
-                    method: 'POST'
-                });
-                
-                cerrarModal();          // Cierra la ventanita
-                this.reset();           // Limpia el formulario
-                cargarEstudiantes();    // Recarga la tabla automáticamente
-                
-            } catch (error) { console.error("Error al guardar:", error); }
-        });
+                const res = await fetch(`${API_URL}/estado-servidor`);
+                if (res.ok) {
+                    badge.textContent = '● Conectado a Render y MongoDB';
+                    badge.className = 'status-badge online';
+                } else {
+                    badge.textContent = '● Servidor con errores';
+                    badge.className = 'status-badge offline';
+                }
+            } catch (e) {
+                badge.textContent = '● Desconectado / Despertando servidor...';
+                badge.className = 'status-badge offline';
+            }
+        }
 
-        // Ejecutar al abrir la página
-        cargarEstudiantes();
+        // 2. OBTENER LISTA DE ESTUDIANTES (/estudiantes)
+        async function obtenerEstudiantes() {
+            const tbody = document.getElementById('tabla-estudiantes');
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #6b7280;">Consultando MongoDB...</td></tr>';
+
+            try {
+                const res = await fetch(`${API_URL}/estudiantes`);
+                const datos = await res.json();
+
+                // Adaptarse según cómo devuelva la lista tu FastAPI (array directo o dentro de una clave)
+                const lista = Array.isArray(datos) ? datos : (datos.estudiantes || datos.datos || []);
+
+                if (lista.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #6b7280;">No hay estudiantes registrados todavía.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                lista.forEach(est => {
+                    const fila = document.createElement('tr');
+                    const nombre = est.nombre || est.correo || 'Sin nombre';
+                    const carrera = est.carrera || est.especialidad || '-';
+                    const extra = est.semestre || est.edad || est.promedio || JSON.stringify(est);
+
+                    fila.innerHTML = `
+                        <td><strong>${nombre}</strong></td>
+                        <td>${carrera}</td>
+                        <td style="color: #6b7280; font-size: 13px;">${extra}</td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #dc2626;">Error al cargar los datos del servidor.</td></tr>';
+            }
+        }
+
+        // 3. INSERTAR NUEVO ESTUDIANTE (/insertar-estudiante)
+        async function insertarEstudiante() {
+            const nombre = document.getElementById('est-nombre').value.trim();
+            const carrera = document.getElementById('est-carrera').value.trim();
+            const semestre = document.getElementById('est-semestre').value.trim();
+            const msg = document.getElementById('mensaje-form');
+            const btn = document.getElementById('btn-guardar');
+
+            if (!nombre) {
+                msg.textContent = 'Por favor, escribe al menos el nombre del estudiante.';
+                msg.className = 'msg error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+            msg.className = 'msg';
+
+            try {
+                // Enviamos los parámetros tanto por URL como por JSON por compatibilidad con tu ruta en main.py
+                const params = new URLSearchParams({
+                    nombre: nombre,
+                    carrera: carrera,
+                    semestre: semestre
+                });
+
+                const res = await fetch(`${API_URL}/insertar-estudiante?${params.toString()}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, carrera, semestre })
+                });
+
+                if (res.ok) {
+                    msg.textContent = '¡Estudiante guardado en MongoDB!';
+                    msg.className = 'msg success';
+                    document.getElementById('est-nombre').value = '';
+                    document.getElementById('est-carrera').value = '';
+                    document.getElementById('est-semestre').value = '';
+                    obtenerEstudiantes();
+                } else {
+                    msg.textContent = 'Revisar los parámetros que pide /insertar-estudiante en main.py';
+                    msg.className = 'msg error';
+                }
+            } catch (error) {
+                msg.textContent = 'Error de conexión con el servidor.';
+                msg.className = 'msg error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Guardar en MongoDB';
+            }
+        }
+
+        // 4. CERRAR SESIÓN
+        function cerrarSesion() {
+            localStorage.removeItem('usuario_correo');
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>

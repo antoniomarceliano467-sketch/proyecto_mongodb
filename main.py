@@ -6,6 +6,7 @@ import smtplib
 import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from fastapi.responses import FileResponse
 
 # 1. INICIALIZACIÓN DE LA API Y SEGURIDAD (CORS)
 app = FastAPI()
@@ -47,6 +48,22 @@ def enviar_codigo_correo(destinatario: str, codigo: str):
     except Exception as e:
         print(f"Error SMTP: {e}")
         return False
+
+# ==========================================
+# 4. RUTAS PARA MOSTRAR EL FRONTEND (HTML)
+# ==========================================
+
+@app.get("/")
+async def mostrar_inicio():
+    return FileResponse("login.html")
+
+@app.get("/login.html")
+async def mostrar_login():
+    return FileResponse("login.html")
+
+@app.get("/dashboard.html")
+async def mostrar_dashboard():
+    return FileResponse("dashboard.html")
 
 # ==========================================
 # RUTAS DE AUTENTICACIÓN (LOGIN Y REGISTRO)
