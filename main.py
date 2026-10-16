@@ -147,9 +147,9 @@ from typing import Optional
 @app.post("/insertar-estudiante")
 async def insertar_estudiante(
     nombre: Optional[str] = None,
-    matricula: Optional[str] = None, 
-    grado: Optional[str] = None, 
-    nivel_lectura: Optional[str] = None, 
+    matricula: Optional[str] = None,
+    grado: Optional[str] = None,
+    nivel_lectura: Optional[str] = None,
     estado: Optional[str] = None,
     datos: Optional[dict] = Body(default=None)
 ):
@@ -171,8 +171,11 @@ async def insertar_estudiante(
         "fecha_registro": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
-    coleccion_est.insert_one(nuevo_doc)
-    return {"mensaje": "Estudiante registrado correctamente"}
+    resultado = coleccion_est.insert_one(nuevo_doc)
+    return {
+        "mensaje": "Estudiante registrado correctamente",
+        "id": str(resultado.inserted_id)
+    }
 @app.put("/actualizar-estudiante/{estudiante_id}")
 async def actualizar_estudiante(
     estudiante_id: str,
