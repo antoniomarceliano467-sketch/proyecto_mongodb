@@ -7,6 +7,7 @@ import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 
 # 1. INICIALIZACIÓN DE LA API Y SEGURIDAD (CORS)
 app = FastAPI()
@@ -53,17 +54,20 @@ def enviar_codigo_correo(destinatario: str, codigo: str):
 # 4. RUTAS PARA MOSTRAR EL FRONTEND (HTML)
 # ==========================================
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def mostrar_inicio():
-    return FileResponse("login.html")
+    with open("login.html", "r", encoding="utf-8") as f:
+        return f.read()
 
-@app.get("/login.html")
+@app.get("/login.html", response_class=HTMLResponse)
 async def mostrar_login():
-    return FileResponse("login.html")
+    with open("login.html", "r", encoding="utf-8") as f:
+        return f.read()
 
-@app.get("/dashboard.html")
+@app.get("/dashboard.html", response_class=HTMLResponse)
 async def mostrar_dashboard():
-    return FileResponse("dashboard.html")
+    with open("dashboard.html", "r", encoding="utf-8") as f:
+        return f.read()
 
 # ==========================================
 # RUTAS DE AUTENTICACIÓN (LOGIN Y REGISTRO)
