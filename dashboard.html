@@ -321,6 +321,7 @@
 
     <script>
         const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
+        let idEstudianteEditando = null; // Variable para saber si estamos editando
 
         // Verificar sesión al abrir la página
         window.onload = function() {
@@ -405,7 +406,7 @@
             }
         }
 
-        // 3. INSERTAR NUEVO ESTUDIANTE
+        // 3. INSERTAR O ACTUALIZAR ESTUDIANTE
         async function insertarEstudiante() {
             const nombre = document.getElementById('est-nombre').value.trim();
             const matricula = document.getElementById('est-matricula').value.trim();
@@ -422,7 +423,6 @@
             }
 
             btn.disabled = true;
-            btn.textContent = 'Guardando...';
             msg.className = 'msg';
 
             try {
@@ -434,21 +434,37 @@
                     estado: estado
                 });
 
-                const res = await fetch(`${API_URL}/insertar-estudiante?${params.toString()}`, {
-                    method: 'POST'
-                });
+                let res;
+                if (idEstudianteEditando) {
+                    // Si hay un ID guardado, actualizamos (PUT)
+                    btn.textContent = 'Actualizando...';
+                    res = await fetch(`${API_URL}/actualizar-estudiante/${idEstudianteEditando}?${params.toString()}`, {
+                        method: 'PUT'
+                    });
+                } else {
+                    // Si no, insertamos uno nuevo (POST)
+                    btn.textContent = 'Guardando...';
+                    res = await fetch(`${API_URL}/insertar-estudiante?${params.toString()}`, {
+                        method: 'POST'
+                    });
+                }
 
                 if (res.ok) {
-                    msg.textContent = '¡Estudiante registrado correctamente!';
+                    msg.textContent = idEstudianteEditando ? '¡Estudiante actualizado correctamente!' : '¡Estudiante registrado correctamente!';
                     msg.className = 'msg success';
+                    
+                    // Limpiar formulario y resetear modo edición
                     document.getElementById('est-nombre').value = '';
                     document.getElementById('est-matricula').value = '';
                     document.getElementById('est-grado').value = '';
                     document.getElementById('est-nivel').value = '';
                     document.getElementById('est-estado').value = '';
+                    idEstudianteEditando = null;
+                    btn.textContent = 'Guardar en MongoDB';
+                    
                     obtenerEstudiantes();
                 } else {
-                    msg.textContent = 'Error al registrar el estudiante.';
+                    msg.textContent = 'Error al procesar la solicitud.';
                     msg.className = 'msg error';
                 }
             } catch (error) {
@@ -456,7 +472,11 @@
                 msg.className = 'msg error';
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Guardar en MongoDB';
+                if (!idEstudianteEditando) {
+                    btn.textContent = 'Guardar en MongoDB';
+                } else {
+                    btn.textContent = 'Actualizar Estudiante';
+                }
             }
         }
 
@@ -480,12 +500,18 @@
 
         // 5. PREPARAR EDICIÓN
         function prepararEdicion(id, nombre, matricula, grado, nivel, estado) {
+            idEstudianteEditando = id; // Guardamos el ID del registro que se va a editar
             document.getElementById('est-nombre').value = nombre !== 'undefined' ? nombre : '';
             document.getElementById('est-matricula').value = matricula !== 'undefined' ? matricula : '';
             document.getElementById('est-grado').value = grado !== 'undefined' ? grado : '';
             document.getElementById('est-nivel').value = nivel !== 'undefined' ? nivel : '';
             document.getElementById('est-estado').value = estado !== 'undefined' ? estado : '';
+            
+            // Cambiar texto del botón visualmente para indicar edición
+            const btn = document.getElementById('btn-guardar');
+            btn.textContent = 'Actualizar Estudiante';
+            
+            // Hacer scroll hacia arriba por si la tabla es muy larga
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-</body>
-</html>
