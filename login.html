@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - RAG Dashboard</title>
+    <title>Acceso - RAG Dashboard</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,118 +14,55 @@
 
         body {
             background-color: #f4f7fb;
-            color: #1f2937;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-        }
-
-        /* BARRA SUPERIOR */
-        .navbar {
-            background-color: #0b1120;
-            color: #ffffff;
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .brand span {
-            background: #ffffff;
-            color: #0b1120;
-            padding: 3px 7px;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: 800;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 14px;
-        }
-
-        .btn-logout {
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .btn-logout:hover {
-            background-color: #dc2626;
-        }
-
-        /* CONTENEDOR PRINCIPAL */
-        .container {
-            max-width: 1200px;
-            margin: 32px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 24px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+            padding: 20px;
         }
 
         .card {
             background: #ffffff;
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-            margin-bottom: 24px;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            text-align: center;
         }
 
-        .card h3 {
-            font-size: 18px;
-            color: #111827;
-            margin-bottom: 18px;
-            border-bottom: 2px solid #f3f4f6;
-            padding-bottom: 10px;
-        }
-
-        /* ESTADO DEL SERVIDOR */
-        .status-badge {
+        .badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            background-color: #fef3c7;
-            color: #d97706;
+            background-color: #0b1120;
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 24px;
         }
 
-        .status-badge.online {
-            background-color: #dcfce7;
-            color: #16a34a;
+        .badge span {
+            background: #ffffff;
+            color: #0b1120;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 800;
         }
 
-        .status-badge.offline {
-            background-color: #fee2e2;
-            color: #dc2626;
+        h2 {
+            color: #111827;
+            font-size: 24px;
+            margin-bottom: 25px;
+            font-weight: 700;
         }
 
-        /* FORMULARIO */
         .form-group {
-            margin-bottom: 15px;
+            text-align: left;
+            margin-bottom: 18px;
         }
 
         label {
@@ -133,101 +70,75 @@
             font-size: 13px;
             font-weight: 600;
             color: #374151;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         input {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
+            padding: 12px 15px;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
             font-size: 14px;
+            color: #1f2937;
             outline: none;
+            transition: border-color 0.2s;
         }
 
         input:focus {
             border-color: #0066ff;
         }
 
-        .btn-primary {
+        .btn {
             width: 100%;
             background-color: #0066ff;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 13px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
+            margin-top: 8px;
             transition: background-color 0.2s;
         }
 
-        .btn-primary:hover {
+        .btn:hover {
             background-color: #0052cc;
         }
 
-        .btn-primary:disabled {
+        .btn:disabled {
             background-color: #93c5fd;
             cursor: not-allowed;
         }
 
-        /* TABLA DE ESTUDIANTES */
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+        .switch-link {
+            margin-top: 22px;
+            font-size: 14px;
+            color: #6b7280;
         }
 
-        .btn-refresh {
-            background-color: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
+        .switch-link a {
+            color: #0066ff;
+            text-decoration: none;
             font-weight: 600;
             cursor: pointer;
         }
 
-        .btn-refresh:hover {
-            background-color: #e5e7eb;
+        .switch-link a:hover {
+            text-decoration: underline;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        th {
-            background-color: #f9fafb;
-            color: #4b5563;
-            font-weight: 600;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        .msg {
-            margin-top: 12px;
-            font-size: 13px;
-            padding: 10px;
-            border-radius: 6px;
+        .hidden {
             display: none;
         }
 
-        .msg.success {
-            display: block;
-            background-color: #dcfce7;
-            color: #16a34a;
+        .msg {
+            margin-top: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
         }
 
         .msg.error {
@@ -235,222 +146,218 @@
             background-color: #fee2e2;
             color: #dc2626;
         }
+
+        .msg.success {
+            display: block;
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
     </style>
 </head>
 <body>
 
-    <!-- BARRA DE NAVEGACIÓN -->
-    <nav class="navbar">
-        <div class="brand">
-            <span>Aa</span> RAG Dashboard
-        </div>
-        <div class="user-info">
-            <span id="usuario-actual">Cargando usuario...</span>
-            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
-        </div>
-    </nav>
+<div class="card">
+    <div class="badge"><span>Aa</span> RAG Dashboard</div>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="container">
-        
-        <!-- COLUMNA IZQUIERDA: ESTADO Y REGISTRO -->
-        <div>
-            <div class="card">
-                <h3>Estado de la Nube (Render)</h3>
-                <div id="estado-servidor" class="status-badge">
-                    Verificando conexión...
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Registrar Estudiante</h3>
-                <div class="form-group">
-                    <label for="est-nombre">Nombre Completo</label>
-                    <input type="text" id="est-nombre" placeholder="Ej. Juan Pérez">
-                </div>
-                <div class="form-group">
-                    <label for="est-matricula">Matrícula</label>
-                    <input type="text" id="est-matricula" placeholder="Ej. A01234567">
-                </div>
-                <div class="form-group">
-                    <label for="est-grado">Grado / Grupo</label>
-                    <input type="text" id="est-grado" placeholder="Ej. 3° Semestre">
-                </div>
-                <div class="form-group">
-                    <label for="est-nivel">Nivel Inicial de Lectura</label>
-                    <input type="text" id="est-nivel" placeholder="Ej. Funcional / Básico">
-                </div>
-                <div class="form-group">
-                    <label for="est-estado">Estado</label>
-                    <input type="text" id="est-estado" placeholder="Ej. Activo">
-                </div>
-                <button class="btn-primary" id="btn-guardar" onclick="insertarEstudiante()">Guardar en MongoDB</button>
-                <div id="mensaje-form" class="msg"></div>
-            </div>
+    <!-- 1. VISTA DE INICIO DE SESIÓN -->
+    <div id="vista-login">
+        <h2>Iniciar Sesión</h2>
+        <div class="form-group">
+            <label for="login-correo">Correo Electrónico</label>
+            <input type="email" id="login-correo" placeholder="tucorreo@ejemplo.com" required>
         </div>
-
-        <!-- COLUMNA DERECHA: LISTA DE DATOS EN MONGODB -->
-        <div>
-            <div class="card">
-                <div class="table-header">
-                    <h3 style="margin: 0; border: none; padding: 0;">Estudiantes Registrados</h3>
-                    <button class="btn-refresh" onclick="obtenerEstudiantes()">🔄 Actualizar lista</button>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre / Matrícula</th>
-                                <th>Grado</th>
-                                <th>Nivel Lectura</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-estudiantes">
-                            <tr>
-                                <td colspan="4" style="text-align: center; color: #6b7280;">Cargando registros desde MongoDB...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="login-password">Contraseña</label>
+            <input type="password" id="login-password" placeholder="••••••••" required>
         </div>
-
+        <button class="btn" id="btn-login" onclick="iniciarSesion()">Ingresar al Sistema</button>
+        <div class="switch-link">
+            ¿No tienes cuenta? <a onclick="cambiarVista('registro')">Regístrate aquí</a>
+        </div>
     </div>
 
-    <script>
-        // URL conectada directamente a tu servidor en Render
-        const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
+    <!-- 2. VISTA DE REGISTRO (CON CONTRASEÑA PERSONALIZADA) -->
+    <div id="vista-registro" class="hidden">
+        <h2>Crear Cuenta</h2>
+        <div class="form-group">
+            <label for="reg-correo">Correo Electrónico</label>
+            <input type="email" id="reg-correo" placeholder="tucorreo@ejemplo.com" required>
+        </div>
+        <div class="form-group">
+            <label for="reg-password">Crea tu Contraseña</label>
+            <input type="password" id="reg-password" placeholder="Escribe tu contraseña" required>
+        </div>
+        <button class="btn" id="btn-registro" onclick="solicitarCodigo()">Enviar Código de Verificación</button>
+        <div class="switch-link">
+            ¿Ya tienes cuenta? <a onclick="cambiarVista('login')">Inicia sesión aquí</a>
+        </div>
+    </div>
 
-        // Verificar sesión al abrir la página
-        window.onload = function() {
-            const correo = localStorage.getItem('usuario_correo');
-            if (!correo) {
-                window.location.href = 'login.html';
-                return;
-            }
-            document.getElementById('usuario-actual').textContent = correo;
-            
-            verificarServidor();
-            obtenerEstudiantes();
-        };
+    <!-- 3. VISTA DE VERIFICACIÓN OTP -->
+    <div id="vista-verificar" class="hidden">
+        <h2>Verificar Código</h2>
+        <p style="font-size: 13px; color: #6b7280; margin-bottom: 18px;">
+            Ingresa el código de 6 dígitos que enviamos a tu correo electrónico.
+        </p>
+        <div class="form-group">
+            <label for="otp-codigo">Código de 6 dígitos</label>
+            <input type="text" id="otp-codigo" placeholder="123456" maxlength="6" required>
+        </div>
+        <button class="btn" id="btn-verificar" onclick="verificarCodigo()">Verificar y Activar Cuenta</button>
+        <div class="switch-link">
+            <a onclick="cambiarVista('registro')">Volver atrás</a>
+        </div>
+    </div>
 
-        // 1. COMPROBAR ESTADO DEL SERVIDOR
-        async function verificarServidor() {
-            const badge = document.getElementById('estado-servidor');
-            try {
-                const res = await fetch(`${API_URL}/estado-servidor`);
-                if (res.ok) {
-                    badge.textContent = '● Conectado a Render y MongoDB';
-                    badge.className = 'status-badge online';
-                } else {
-                    badge.textContent = '● Servidor con errores';
-                    badge.className = 'status-badge offline';
-                }
-            } catch (e) {
-                badge.textContent = '● Desconectado / Despertando servidor...';
-                badge.className = 'status-badge offline';
-            }
+    <!-- MENSAJES DE ESTADO -->
+    <div id="mensaje-estado" class="msg"></div>
+</div>
+
+<script>
+    // URL conectada directamente a tu servidor en Render
+    const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
+
+    let correoEnProceso = '';
+
+    // Limpieza automática al cargar el login para evitar bloqueos de sesión previa
+    window.onload = function() {
+        localStorage.removeItem('usuario_correo');
+        cambiarVista('login');
+    };
+
+    function mostrarMensaje(texto, tipo) {
+        const msgDiv = document.getElementById('mensaje-estado');
+        msgDiv.textContent = texto;
+        msgDiv.className = 'msg ' + tipo;
+    }
+
+    function limpiarMensaje() {
+        const msgDiv = document.getElementById('mensaje-estado');
+        msgDiv.className = 'msg';
+        msgDiv.textContent = '';
+    }
+
+    function cambiarVista(vista) {
+        limpiarMensaje();
+        document.getElementById('vista-login').classList.add('hidden');
+        document.getElementById('vista-registro').classList.add('hidden');
+        document.getElementById('vista-verificar').classList.add('hidden');
+
+        if (vista === 'login') {
+            document.getElementById('vista-login').classList.remove('hidden');
+        } else if (vista === 'registro') {
+            document.getElementById('vista-registro').classList.remove('hidden');
+        } else if (vista === 'verificar') {
+            document.getElementById('vista-verificar').classList.remove('hidden');
+        }
+    }
+
+    // 1. FUNCIÓN PARA INICIAR SESIÓN
+    async function iniciarSesion() {
+        const correo = document.getElementById('login-correo').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const btn = document.getElementById('btn-login');
+
+        if (!correo || !password) {
+            mostrarMensaje('Por favor, completa todos los campos.', 'error');
+            return;
         }
 
-        // 2. OBTENER LISTA DE ESTUDIANTES
-        async function obtenerEstudiantes() {
-            const tbody = document.getElementById('tabla-estudiantes');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280;">Consultando MongoDB...</td></tr>';
+        btn.disabled = true;
+        btn.textContent = 'Conectando...';
+        limpiarMensaje();
 
-            try {
-                const res = await fetch(`${API_URL}/estudiantes`);
-                const datos = await res.json();
+        try {
+            const url = `${API_URL}/login?correo=${encodeURIComponent(correo)}&password=${encodeURIComponent(password)}`;
+            const respuesta = await fetch(url, { method: 'POST' });
+            const datos = await respuesta.json();
 
-                const lista = Array.isArray(datos) ? datos : (datos.estudiantes || datos.datos || []);
-
-                if (lista.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280;">No hay estudiantes registrados todavía.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = '';
-                lista.forEach(est => {
-                    const fila = document.createElement('tr');
-                    const nombre = est.nombre || 'Sin nombre';
-                    const matricula = est.matricula || 'S/N';
-                    const grado = est.grado || '-';
-                    const nivel = est.nivel_inicial_lectura || est.nivel_lectura || '-';
-                    const estado = est.estado || 'Activo';
-
-                    fila.innerHTML = `
-                        <td><strong>${nombre}</strong><br><span style="font-size: 11px; color: #6b7280;">Matrícula: ${matricula}</span></td>
-                        <td>${grado}</td>
-                        <td><span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${nivel}</span></td>
-                        <td>${estado}</td>
-                    `;
-                    tbody.appendChild(fila);
-                });
-            } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #dc2626;">Error al cargar los datos del servidor.</td></tr>';
+            if (respuesta.ok && !datos.error) {
+                mostrarMensaje('¡Acceso correcto! Redirigiendo...', 'success');
+                localStorage.setItem('usuario_correo', correo);
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 1000);
+            } else {
+                mostrarMensaje(datos.error || datos.detail || 'Credenciales incorrectas.', 'error');
             }
+        } catch (error) {
+            mostrarMensaje('Error al conectar con el servidor en la nube.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Ingresar al Sistema';
+        }
+    }
+
+    // 2. FUNCIÓN PARA REGISTRAR USUARIO Y ENVIAR CÓDIGO
+    async function solicitarCodigo() {
+        const correo = document.getElementById('reg-correo').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const btn = document.getElementById('btn-registro');
+
+        if (!correo || !password) {
+            mostrarMensaje('Ingresa tu correo y crea una contraseña.', 'error');
+            return;
         }
 
-        // 3. INSERTAR NUEVO ESTUDIANTE
-        async function insertarEstudiante() {
-            const nombre = document.getElementById('est-nombre').value.trim();
-            const matricula = document.getElementById('est-matricula').value.trim();
-            const grado = document.getElementById('est-grado').value.trim();
-            const nivel_lectura = document.getElementById('est-nivel').value.trim();
-            const estado = document.getElementById('est-estado').value.trim();
-            const msg = document.getElementById('mensaje-form');
-            const btn = document.getElementById('btn-guardar');
+        btn.disabled = true;
+        btn.textContent = 'Enviando código...';
+        limpiarMensaje();
 
-            if (!nombre || !matricula) {
-                msg.textContent = 'Por favor, completa al menos el nombre y la matrícula.';
-                msg.className = 'msg error';
-                return;
+        try {
+            const url = `${API_URL}/solicitar-codigo?correo=${encodeURIComponent(correo)}&password=${encodeURIComponent(password)}`;
+            const respuesta = await fetch(url, { method: 'POST' });
+            const datos = await respuesta.json();
+
+            if (respuesta.ok && !datos.error) {
+                correoEnProceso = correo;
+                cambiarVista('verificar');
+                mostrarMensaje('Código enviado a tu correo.', 'success');
+            } else {
+                mostrarMensaje(datos.error || datos.detail || 'No se pudo enviar el código.', 'error');
             }
+        } catch (error) {
+            mostrarMensaje('Error al conectar con el servidor.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enviar Código de Verificación';
+        }
+    }
 
-            btn.disabled = true;
-            btn.textContent = 'Guardando...';
-            msg.className = 'msg';
+    // 3. FUNCIÓN PARA VERIFICAR EL CÓDIGO OTP
+    async function verificarCodigo() {
+        const codigo = document.getElementById('otp-codigo').value.trim();
+        const btn = document.getElementById('btn-verificar');
 
-            try {
-                const params = new URLSearchParams({
-                    nombre: nombre,
-                    matricula: matricula,
-                    grado: grado,
-                    nivel_lectura: nivel_lectura,
-                    estado: estado
-                });
-
-                const res = await fetch(`${API_URL}/insertar-estudiante?${params.toString()}`, {
-                    method: 'POST'
-                });
-
-                if (res.ok) {
-                    msg.textContent = '¡Estudiante registrado correctamente!';
-                    msg.className = 'msg success';
-                    document.getElementById('est-nombre').value = '';
-                    document.getElementById('est-matricula').value = '';
-                    document.getElementById('est-grado').value = '';
-                    document.getElementById('est-nivel').value = '';
-                    document.getElementById('est-estado').value = '';
-                    obtenerEstudiantes();
-                } else {
-                    msg.textContent = 'Error al registrar el estudiante.';
-                    msg.className = 'msg error';
-                }
-            } catch (error) {
-                msg.textContent = 'Error de conexión con el servidor.';
-                msg.className = 'msg error';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Guardar en MongoDB';
-            }
+        if (!codigo) {
+            mostrarMensaje('Ingresa el código de 6 dígitos.', 'error');
+            return;
         }
 
-        // 4. CERRAR SESIÓN
-        function cerrarSesion() {
-            localStorage.removeItem('usuario_correo');
-            window.location.href = 'login.html';
+        btn.disabled = true;
+        btn.textContent = 'Verificando...';
+        limpiarMensaje();
+
+        try {
+            const url = `${API_URL}/verificar-codigo?correo=${encodeURIComponent(correoEnProceso)}&codigo=${encodeURIComponent(codigo)}`;
+            const respuesta = await fetch(url, { method: 'POST' });
+            const datos = await respuesta.json();
+
+            if (respuesta.ok && !datos.error) {
+                cambiarVista('login');
+                document.getElementById('login-correo').value = correoEnProceso;
+                mostrarMensaje('¡Cuenta verificada! Ya puedes iniciar sesión con tu contraseña.', 'success');
+            } else {
+                mostrarMensaje(datos.error || datos.detail || 'Código inválido o incorrecto.', 'error');
+            }
+        } catch (error) {
+            mostrarMensaje('Error al verificar el código.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Verificar y Activar Cuenta';
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
