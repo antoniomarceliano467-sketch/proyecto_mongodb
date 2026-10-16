@@ -70,7 +70,7 @@
 
         /* CONTENEDOR PRINCIPAL */
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 32px auto;
             padding: 0 20px;
             display: grid;
@@ -166,6 +166,11 @@
             background-color: #0052cc;
         }
 
+        .btn-primary:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
         /* TABLA DE ESTUDIANTES */
         .table-header {
             display: flex;
@@ -192,12 +197,12 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         th, td {
             text-align: left;
-            padding: 12px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e5e7eb;
         }
 
@@ -264,12 +269,20 @@
                     <input type="text" id="est-nombre" placeholder="Ej. Juan Pérez">
                 </div>
                 <div class="form-group">
-                    <label for="est-carrera">Carrera / Especialidad</label>
-                    <input type="text" id="est-carrera" placeholder="Ej. Ingeniería en Sistemas">
+                    <label for="est-matricula">Matrícula</label>
+                    <input type="text" id="est-matricula" placeholder="Ej. A01234567">
                 </div>
                 <div class="form-group">
-                    <label for="est-semestre">Semestre / Grado</label>
-                    <input type="number" id="est-semestre" placeholder="Ej. 5">
+                    <label for="est-grado">Grado / Grupo</label>
+                    <input type="text" id="est-grado" placeholder="Ej. 3° Semestre">
+                </div>
+                <div class="form-group">
+                    <label for="est-nivel">Nivel Inicial de Lectura</label>
+                    <input type="text" id="est-nivel" placeholder="Ej. Funcional / Básico">
+                </div>
+                <div class="form-group">
+                    <label for="est-estado">Estado</label>
+                    <input type="text" id="est-estado" placeholder="Ej. Activo">
                 </div>
                 <button class="btn-primary" id="btn-guardar" onclick="insertarEstudiante()">Guardar en MongoDB</button>
                 <div id="mensaje-form" class="msg"></div>
@@ -280,21 +293,22 @@
         <div>
             <div class="card">
                 <div class="table-header">
-                    <h3 style="margin: 0; border: none; padding: 0;">Estudiantes en Base de Datos</h3>
+                    <h3 style="margin: 0; border: none; padding: 0;">Estudiantes Registrados</h3>
                     <button class="btn-refresh" onclick="obtenerEstudiantes()">🔄 Actualizar lista</button>
                 </div>
                 <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>Nombre</th>
-                                <th>Carrera / Info</th>
-                                <th>Detalles</th>
+                                <th>Nombre / Matrícula</th>
+                                <th>Grado</th>
+                                <th>Nivel Lectura</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-estudiantes">
                             <tr>
-                                <td colspan="3" style="text-align: center; color: #6b7280;">Cargando registros desde MongoDB...</td>
+                                <td colspan="4" style="text-align: center; color: #6b7280;">Cargando registros desde MongoDB...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -305,23 +319,19 @@
     </div>
 
     <script>
-        // URL conectada directamente a tu servidor en Render
         const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
 
-        // Verificar sesión al abrir la página
         window.onload = function() {
             const correo = localStorage.getItem('usuario_correo');
             if (!correo) {
-                window.location.href = 'login.html';
+                window.location.href = '/';
                 return;
             }
             document.getElementById('usuario-actual').textContent = correo;
-            
             verificarServidor();
             obtenerEstudiantes();
         };
 
-        // 1. COMPROBAR ESTADO DEL SERVIDOR (/estado-servidor)
         async function verificarServidor() {
             const badge = document.getElementById('estado-servidor');
             try {
@@ -339,52 +349,53 @@
             }
         }
 
-        // 2. OBTENER LISTA DE ESTUDIANTES (/estudiantes)
         async function obtenerEstudiantes() {
             const tbody = document.getElementById('tabla-estudiantes');
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #6b7280;">Consultando MongoDB...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280;">Consultando MongoDB...</td></tr>';
 
             try {
                 const res = await fetch(`${API_URL}/estudiantes`);
                 const datos = await res.json();
-
-                // Adaptarse según cómo devuelva la lista tu FastAPI (array directo o dentro de una clave)
                 const lista = Array.isArray(datos) ? datos : (datos.estudiantes || datos.datos || []);
 
                 if (lista.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #6b7280;">No hay estudiantes registrados todavía.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280;">No hay estudiantes registrados todavía.</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = '';
                 lista.forEach(est => {
                     const fila = document.createElement('tr');
-                    const nombre = est.nombre || est.correo || 'Sin nombre';
-                    const carrera = est.carrera || est.especialidad || '-';
-                    const extra = est.semestre || est.edad || est.promedio || JSON.stringify(est);
+                    const nombre = est.nombre || 'Sin nombre';
+                    const matricula = est.matricula || 'S/N';
+                    const grado = est.grado || '-';
+                    const nivel = est.nivel_inicial_lectura || est.nivel_lectura || '-';
+                    const estado = est.estado || 'Activo';
 
                     fila.innerHTML = `
-                        <td><strong>${nombre}</strong></td>
-                        <td>${carrera}</td>
-                        <td style="color: #6b7280; font-size: 13px;">${extra}</td>
+                        <td><strong>${nombre}</strong><br><span style="font-size: 11px; color: #6b7280;">Matrícula: ${matricula}</span></td>
+                        <td>${grado}</td>
+                        <td><span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${nivel}</span></td>
+                        <td>${estado}</td>
                     `;
                     tbody.appendChild(fila);
                 });
             } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #dc2626;">Error al cargar los datos del servidor.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #dc2626;">Error al cargar los datos del servidor.</td></tr>';
             }
         }
 
-        // 3. INSERTAR NUEVO ESTUDIANTE (/insertar-estudiante)
         async function insertarEstudiante() {
             const nombre = document.getElementById('est-nombre').value.trim();
-            const carrera = document.getElementById('est-carrera').value.trim();
-            const semestre = document.getElementById('est-semestre').value.trim();
+            const matricula = document.getElementById('est-matricula').value.trim();
+            const grado = document.getElementById('est-grado').value.trim();
+            const nivel_lectura = document.getElementById('est-nivel').value.trim();
+            const estado = document.getElementById('est-estado').value.trim();
             const msg = document.getElementById('mensaje-form');
             const btn = document.getElementById('btn-guardar');
 
-            if (!nombre) {
-                msg.textContent = 'Por favor, escribe al menos el nombre del estudiante.';
+            if (!nombre || !matricula) {
+                msg.textContent = 'Por favor, completa al menos el nombre y la matrícula.';
                 msg.className = 'msg error';
                 return;
             }
@@ -394,28 +405,29 @@
             msg.className = 'msg';
 
             try {
-                // Enviamos los parámetros tanto por URL como por JSON por compatibilidad con tu ruta en main.py
                 const params = new URLSearchParams({
                     nombre: nombre,
-                    carrera: carrera,
-                    semestre: semestre
+                    matricula: matricula,
+                    grado: grado,
+                    nivel_lectura: nivel_lectura,
+                    estado: estado
                 });
 
                 const res = await fetch(`${API_URL}/insertar-estudiante?${params.toString()}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, carrera, semestre })
+                    method: 'POST'
                 });
 
                 if (res.ok) {
-                    msg.textContent = '¡Estudiante guardado en MongoDB!';
+                    msg.textContent = '¡Estudiante registrado correctamente!';
                     msg.className = 'msg success';
                     document.getElementById('est-nombre').value = '';
-                    document.getElementById('est-carrera').value = '';
-                    document.getElementById('est-semestre').value = '';
+                    document.getElementById('est-matricula').value = '';
+                    document.getElementById('est-grado').value = '';
+                    document.getElementById('est-nivel').value = '';
+                    document.getElementById('est-estado').value = '';
                     obtenerEstudiantes();
                 } else {
-                    msg.textContent = 'Revisar los parámetros que pide /insertar-estudiante en main.py';
+                    msg.textContent = 'Error al registrar el estudiante.';
                     msg.className = 'msg error';
                 }
             } catch (error) {
@@ -427,10 +439,9 @@
             }
         }
 
-        // 4. CERRAR SESIÓN
         function cerrarSesion() {
-            localStorage.clear(); // Borra cualquier dato guardado
-            window.location.href = '/'; // Redirige a la pantalla de inicio (login)
+            localStorage.clear();
+            window.location.href = '/';
         }
     </script>
 </body>
