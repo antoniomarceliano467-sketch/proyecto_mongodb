@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Estudiantes - RAG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f4f6f8] font-sans flex h-screen overflow-hidden">
+
+    <!-- BARRA LATERAL (Sidebar) -->
+    <aside class="w-64 bg-[#1e293b] text-white flex flex-col h-full">
+        <div class="p-6 flex items-center gap-3 mb-6">
+            <span class="bg-white text-gray-900 rounded px-2 py-1 font-bold">Aª</span>
+            <span class="font-bold text-xl">RAG Dashboard</span>
+        </div>
+        <nav class="flex-1 px-4 space-y-2">
+            <a href="#" class="block px-4 py-3 rounded text-gray-400 hover:text-white">Dashboard</a>
+            <a href="#" class="block px-4 py-3 rounded text-gray-400 hover:text-white">Chatbot</a>
+            <a href="#" class="block px-4 py-3 rounded bg-blue-600 text-white font-semibold">Estudiantes</a>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-10 overflow-y-auto relative">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Gestión de Estudiantes</h1>
+            <button onclick="abrirModal()" class="bg-[#1a73e8] hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                + Nuevo Estudiante
+            </button>
+        </div>
+
+        <!-- TABLA -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-gray-200 text-sm text-gray-600">
+                        <th class="p-4 font-semibold text-center">Matrícula</th>
+                        <th class="p-4 font-semibold text-center">Grado</th>
+                        <th class="p-4 font-semibold text-center">Nivel de Lectura</th>
+                        <th class="p-4 font-semibold text-center">Fecha de Registro</th>
+                        <th class="p-4 font-semibold text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-estudiantes" class="text-sm">
+                    <!-- Aquí se inyectan los datos desde FastAPI -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- MODAL REGISTRO (Fondo Oscuro) -->
+    <div id="modalRegistro" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+        <!-- Contenedor del Modal -->
+        <div class="bg-white rounded-xl shadow-lg w-[600px] p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Registrar Estudiante</h2>
+                <button onclick="cerrarModal()" class="text-gray-500 hover:text-gray-800 text-xl font-bold">&times;</button>
+            </div>
+
+            <form id="formEstudiante" class="grid grid-cols-2 gap-6">
+                <!-- Columna Izquierda -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Matrícula</label>
+                    <input type="text" id="inputMatricula" class="border rounded w-full py-2 px-3 text-gray-700 focus:ring-2 focus:ring-blue-500" required>
+                    
+                    <label class="block text-gray-700 text-sm font-bold mb-2 mt-4">Grado</label>
+                    <select id="inputGrado" class="border rounded w-full py-2 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500">
+                        <option>1er Semestre</option>
+                        <option>3er Semestre</option>
+                        <option>5to Semestre</option>
+                    </select>
+                </div>
+                <!-- Columna Derecha -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Nivel de Lectura</label>
+                    <select id="inputNivel" class="border rounded w-full py-2 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500">
+                        <option>Básico</option>
+                        <option>Intermedio</option>
+                        <option>Avanzado</option>
+                    </select>
+                    
+                    <label class="block text-gray-700 text-sm font-bold mb-2 mt-4">Estado</label>
+                    <select id="inputEstado" class="border rounded w-full py-2 px-3 text-gray-700 bg-white focus:ring-2 focus:ring-blue-500">
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <!-- Botones Pie de ventana -->
+                <div class="col-span-2 flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="cerrarModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
+                    <button type="submit" class="bg-[#1a73e8] hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE CONEXIÓN A FASTAPI -->
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+
+        // 1. Mostrar y Ocultar el Modal
+        function abrirModal() { document.getElementById('modalRegistro').style.display = 'flex'; }
+        function cerrarModal() { document.getElementById('modalRegistro').style.display = 'none'; }
+
+        // 2. Leer Estudiantes (GET) y pintar la tabla
+        async function cargarEstudiantes() {
+            try {
+                const respuesta = await fetch(`${API_URL}/estudiantes`);
+                const datos = await respuesta.json();
+                const tbody = document.getElementById('tabla-estudiantes');
+                tbody.innerHTML = ''; 
+
+                datos.estudiantes.forEach(est => {
+                    let fecha = est.fecha_registro.split(' ')[0];
+                    let estadoClass = est.estado.toLowerCase() === 'activo' ? 'bg-[#d4edda] text-[#155724]' : 'bg-gray-200 text-gray-600';
+                    
+                    tbody.innerHTML += `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 text-center">
+                            <td class="p-4 font-bold">${est.matricula}</td>
+                            <td class="p-4">${est.grado}</td>
+                            <td class="p-4">${est.nivel_inicial_lectura}</td>
+                            <td class="p-4">${fecha}</td>
+                            <td class="p-4">
+                                <span class="${estadoClass} px-3 py-1 rounded-full text-xs font-bold">${est.estado}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) { console.error("Error al cargar Atlas:", error); }
+        }
+
+        // 3. Crear Nuevo Estudiante (POST) desde el Modal
+        document.getElementById('formEstudiante').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Evita que recargue la página
+            
+            // Recolectar datos del formulario
+            const matricula = document.getElementById('inputMatricula').value;
+            const grado = document.getElementById('inputGrado').value;
+            const nivel = document.getElementById('inputNivel').value;
+            const estado = document.getElementById('inputEstado').value;
+
+            // Enviar a FastAPI usando los parámetros de query (como lo programamos)
+            try {
+                await fetch(`${API_URL}/insertar-estudiante?matricula=${matricula}&grado=${grado}&nivel_lectura=${nivel}&estado=${estado}`, {
+                    method: 'POST'
+                });
+                
+                cerrarModal();          // Cierra la ventanita
+                this.reset();           // Limpia el formulario
+                cargarEstudiantes();    // Recarga la tabla automáticamente
+                
+            } catch (error) { console.error("Error al guardar:", error); }
+        });
+
+        // Ejecutar al abrir la página
+        cargarEstudiantes();
+    </script>
+</body>
+</html>
