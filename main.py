@@ -135,16 +135,37 @@ async def obtener_estudiantes():
         lista.append(est)
     return {"estudiantes": lista}
 
+from datetime import datetime
+from fastapi import Body
+from typing import Optional
+
 @app.post("/insertar-estudiante")
-async def insertar_estudiante(matricula: str, grado: str, nivel_lectura: str, estado: str):
+async def insertar_estudiante(
+    nombre: Optional[str] = None,
+    matricula: Optional[str] = None, 
+    grado: Optional[str] = None, 
+    nivel_lectura: Optional[str] = None, 
+    estado: Optional[str] = None,
+    datos: Optional[dict] = Body(default=None)
+):
     coleccion_est = db["estudiantes"]
+    
+    # Extraer de los parámetros o del cuerpo JSON por compatibilidad
+    d_nombre = nombre or (datos.get("nombre") if datos else "Sin nombre")
+    d_matricula = matricula or (datos.get("matricula") if datos else "S/N")
+    d_grado = grado or (datos.get("grado") if datos else "S/G")
+    d_nivel = nivel_lectura or (datos.get("nivel_lectura") if datos else "Básico")
+    d_estado = estado or (datos.get("estado") if datos else "Activo")
+
     nuevo_doc = {
-        "matricula": matricula,
-        "grado": grado,
-        "nivel_inicial_lectura": nivel_lectura,
-        "estado": estado,
+        "nombre": d_nombre,
+        "matricula": d_matricula,
+        "grado": d_grado,
+        "nivel_inicial_lectura": d_nivel,
+        "estado": d_estado,
         "fecha_registro": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
+    
     coleccion_est.insert_one(nuevo_doc)
     return {"mensaje": "Estudiante registrado correctamente"}
 
