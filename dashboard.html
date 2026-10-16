@@ -334,14 +334,25 @@
             obtenerEstudiantes();
         };
 
+        function cerrarSesion() {
+            localStorage.removeItem('usuario_correo');
+            window.location.href = '/';
+        }
+
         // 1. COMPROBAR ESTADO DEL SERVIDOR
         async function verificarServidor() {
             const badge = document.getElementById('estado-servidor');
             try {
                 const res = await fetch(`${API_URL}/estado-servidor`);
                 if (res.ok) {
-                    badge.textContent = '● Conectado a Render y MongoDB';
-                    badge.className = 'status-badge online';
+                    const data = await res.json();
+                    if (data.estado === "En línea") {
+                        badge.textContent = '● Conectado a Render y MongoDB';
+                        badge.className = 'status-badge online';
+                    } else {
+                        badge.textContent = '● Servidor con errores';
+                        badge.className = 'status-badge offline';
+                    }
                 } else {
                     badge.textContent = '● Servidor con errores';
                     badge.className = 'status-badge offline';
@@ -467,13 +478,14 @@
             }
         }
 
-        // 5. PREPARAR EDICIÓN (Rellena el formulario con los datos actuales)
+        // 5. PREPARAR EDICIÓN
         function prepararEdicion(id, nombre, matricula, grado, nivel, estado) {
             document.getElementById('est-nombre').value = nombre !== 'undefined' ? nombre : '';
             document.getElementById('est-matricula').value = matricula !== 'undefined' ? matricula : '';
             document.getElementById('est-grado').value = grado !== 'undefined' ? grado : '';
             document.getElementById('est-nivel').value = nivel !== 'undefined' ? nivel : '';
             document.getElementById('est-estado').value = estado !== 'undefined' ? estado : '';
-            
-            // Opcional: Podrías cambiar el botón de guardar temporalmente a "Actualizar" si manejas lógica de edición
         }
+    </script>
+</body>
+</html>
