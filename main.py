@@ -1,34 +1,34 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
-from gridfs.grid_file import ObjectId
+from fastapi.responses import HTMLResponse
+from bson import ObjectId
 from pymongo import MongoClient
 from datetime import datetime
 import smtplib
 import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from fastapi.responses import FileResponse
-from fastapi.responses import HTMLResponse
+from typing import Optional
 
 # 1. INICIALIZACIÓN DE LA API Y SEGURIDAD (CORS)
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Permite que tu HTML local se conecte
+    allow_origins=["*"],  # Permite que tu HTML se conecte
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # 2. CONEXIÓN A MONGODB ATLAS
-uri = uri = "mongodb+srv://Antonio_Marceliano:SoldierMaggot45@cluster1.wlqnuf6.mongodb.net/" # Asegúrate de que esta sea tu URI completa
+uri = "mongodb+srv://Antonio_Marceliano:SoldierMaggot45@cluster1.wlqnuf6.mongodb.net/"
 cliente = MongoClient(uri)
-db = cliente["sistema_rag"] # Nombre de tu base de datos principal
+db = cliente["sistema_rag"]  # Nombre de tu base de datos principal
 
 # 3. CONFIGURACIÓN DE CORREO SMTP (GMAIL)
-EMAIL_REMITENTE = "antoniomarceliano467@gmail.com" # Cambia esto
-EMAIL_PASSWORD = "nlxfeqcjvduifgxz" # 16 caracteres sin espacios
+EMAIL_REMITENTE = "antoniomarceliano467@gmail.com"
+EMAIL_PASSWORD = "nlxfeqcjvduifgxz"  # 16 caracteres sin espacios
 
 def enviar_codigo_correo(destinatario: str, codigo: str):
     asunto = "Código de Verificación - STI RAG"
@@ -88,22 +88,15 @@ async def iniciar_sesion(correo: str, password: str):
     return {"mensaje": "Inicio de sesión exitoso"}
 
 @app.post("/solicitar-codigo")
-async def solicitar_codigo(correo: str, password: str): # Recibe la contraseña del formulario
+async def solicitar_codigo(correo: str, password: str):
     codigo_otp = str(random.randint(100000, 999999))
     coleccion_usuarios = db["usuarios"]
     
     coleccion_usuarios.update_one(
         {"correo": correo}, 
-        # Guardamos la variable 'password' que escribió el usuario, NO "123"
         {"$set": {"codigo": codigo_otp, "verificado": False, "password": password}}, 
         upsert=True
     )
-    
-    exito = enviar_codigo_correo(correo, codigo_otp)
-    if exito:
-        return {"mensaje": "Código enviado exitosamente"}
-    else:
-        return {"error": "Error al enviar el correo."}
     
     exito = enviar_codigo_correo(correo, codigo_otp)
     if exito:
@@ -134,15 +127,10 @@ async def verificar_codigo(correo: str, codigo_ingresado: str):
 async def obtener_estudiantes():
     coleccion_est = db["estudiantes"]
     lista = []
-    # Busca todos los estudiantes y los formatea para enviarlos al frontend
     for est in coleccion_est.find():
-        est["_id"] = str(est["_id"]) # Evita errores con el ID de Mongo
+        est["_id"] = str(est["_id"])
         lista.append(est)
     return {"estudiantes": lista}
-
-from datetime import datetime
-from fastapi import Body
-from typing import Optional
 
 @app.post("/insertar-estudiante")
 async def insertar_estudiante(
@@ -155,7 +143,6 @@ async def insertar_estudiante(
 ):
     coleccion_est = db["estudiantes"]
     
-    # Extraer de los parámetros o del cuerpo JSON por compatibilidad
     d_nombre = nombre or (datos.get("nombre") if datos else "Sin nombre")
     d_matricula = matricula or (datos.get("matricula") if datos else "S/N")
     d_grado = grado or (datos.get("grado") if datos else "S/G")
@@ -176,6 +163,7 @@ async def insertar_estudiante(
         "mensaje": "Estudiante registrado correctamente",
         "id": str(resultado.inserted_id)
     }
+
 @app.put("/actualizar-estudiante/{estudiante_id}")
 async def actualizar_estudiante(
     estudiante_id: str,
