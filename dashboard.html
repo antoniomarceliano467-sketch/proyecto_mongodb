@@ -304,11 +304,12 @@
                                 <th>Grado</th>
                                 <th>Nivel Lectura</th>
                                 <th>Estado</th>
+                                <th style="text-align: center;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-estudiantes">
                             <tr>
-                                <td colspan="4" style="text-align: center; color: #6b7280;">Cargando registros desde MongoDB...</td>
+                                <td colspan="5" style="text-align: center; color: #6b7280;">Cargando registros desde MongoDB...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -321,6 +322,7 @@
     <script>
         const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
 
+        // Verificar sesión al abrir la página
         window.onload = function() {
             const correo = localStorage.getItem('usuario_correo');
             if (!correo) {
@@ -332,6 +334,7 @@
             obtenerEstudiantes();
         };
 
+        // 1. COMPROBAR ESTADO DEL SERVIDOR
         async function verificarServidor() {
             const badge = document.getElementById('estado-servidor');
             try {
@@ -349,9 +352,10 @@
             }
         }
 
+        // 2. OBTENER LISTA DE ESTUDIANTES
         async function obtenerEstudiantes() {
             const tbody = document.getElementById('tabla-estudiantes');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280;">Consultando MongoDB...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #6b7280;">Consultando MongoDB...</td></tr>';
 
             try {
                 const res = await fetch(`${API_URL}/estudiantes`);
@@ -359,13 +363,14 @@
                 const lista = Array.isArray(datos) ? datos : (datos.estudiantes || datos.datos || []);
 
                 if (lista.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280;">No hay estudiantes registrados todavía.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #6b7280;">No hay estudiantes registrados todavía.</td></tr>';
                     return;
                 }
 
                 tbody.innerHTML = '';
                 lista.forEach(est => {
                     const fila = document.createElement('tr');
+                    const id = est._id || est.id;
                     const nombre = est.nombre || 'Sin nombre';
                     const matricula = est.matricula || 'S/N';
                     const grado = est.grado || '-';
@@ -377,14 +382,19 @@
                         <td>${grado}</td>
                         <td><span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${nivel}</span></td>
                         <td>${estado}</td>
+                        <td style="text-align: center;">
+                            <button onclick="prepararEdicion('${id}', '${nombre}', '${matricula}', '${grado}', '${nivel}', '${estado}')" style="background:#f59e0b; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px; margin-right:4px;" title="Editar">✏️</button>
+                            <button onclick="eliminarEstudiante('${id}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;" title="Eliminar">🗑️</button>
+                        </td>
                     `;
                     tbody.appendChild(fila);
                 });
             } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #dc2626;">Error al cargar los datos del servidor.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc2626;">Error al cargar los datos del servidor.</td></tr>';
             }
         }
 
+        // 3. INSERTAR NUEVO ESTUDIANTE
         async function insertarEstudiante() {
             const nombre = document.getElementById('est-nombre').value.trim();
             const matricula = document.getElementById('est-matricula').value.trim();
@@ -439,10 +449,27 @@
             }
         }
 
-        function cerrarSesion() {
-            localStorage.clear();
-            window.location.href = '/';
+        // 4. ELIMINAR ESTUDIANTE
+        async function eliminarEstudiante(id) {
+            if (!confirm("¿Estás seguro de que deseas eliminar este estudiante?")) return;
+
+            try {
+                const res = await fetch(`${API_URL}/eliminar-estudiante/${id}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    obtenerEstudiantes();
+                } else {
+                    alert("No se pudo eliminar el registro.");
+                }
+            } catch (error) {
+                alert("Error de conexión al intentar eliminar.");
+            }
         }
-    </script>
-</body>
-</html>
+
+        // 5. PREPARAR EDICIÓN (Rellena el formulario con los datos actuales)
+        function prepararEdicion(id, nombre, matricula, grado, nivel, estado) {
+            document.getElementById('est-nombre').value = nombre !== 'undefined' ? nombre : '';
+            document.getElementById('est-matricula').value = matricula !== 'undefined' ? matricula : '';
+            document.getElementById('est-grado').value = grado !== 'undefined' ? grado : '';
+            document.getElementById('est-nivel').value = nivel !== 'undefined' ?

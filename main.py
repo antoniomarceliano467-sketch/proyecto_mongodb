@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from gridfs.grid_file import ObjectId
 from pymongo import MongoClient
 from datetime import datetime
 import smtplib
@@ -172,6 +173,57 @@ async def insertar_estudiante(
     
     coleccion_est.insert_one(nuevo_doc)
     return {"mensaje": "Estudiante registrado correctamente"}
+@app.put("/actualizar-estudiante/{estudiante_id}")
+async def actualizar_estudiante(
+    estudiante_id: str,
+    nombre: Optional[str] = None,
+    matricula: Optional[str] = None,
+    grado: Optional[str] = None,
+    nivel_lectura: Optional[str] = None,
+    estado: Optional[str] = None,
+    datos: Optional[dict] = Body(default=None)
+):
+    coleccion_est = db["estudiantes"]
+    try:
+        obj_id = ObjectId(estudiante_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID inválido")
+
+    d_nombre = nombre or (datos.get("nombre") if datos else None)
+    d_matricula = matricula or (datos.get("matricula") if datos else None)
+    d_grado = grado or (datos.get("grado") if datos else None)
+    d_nivel = nivel_lectura or (datos.get("nivel_lectura") if datos else None)
+    d_estado = estado or (datos.get("estado") if datos else None)
+
+    actualizacion = {}
+    if d_nombre: actualizacion["nombre"] = d_nombre
+    if d_matricula: actualizacion["matricula"] = d_matricula
+    if d_grado: actualizacion["grado"] = d_grado
+    if d_nivel: actualizacion["nivel_inicial_lectura"] = d_nivel
+    if d_estado: actualizacion["estado"] = d_estado
+
+    if not actualizacion:
+        return {"mensaje": "No hay datos para actualizar"}
+
+    resultado = coleccion_est.update_one({"_id": obj_id}, {"$set": actualizacion})
+    if resultado.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
+    
+    return {"mensaje": "Estudiante actualizado correctamente"}
+
+@app.delete("/eliminar-estudiante/{estudiante_id}")
+async def eliminar_estudiante(estudiante_id: str):
+    coleccion_est = db["estudiantes"]
+    try:
+        obj_id = ObjectId(estudiante_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID inválido")
+
+    resultado = coleccion_est.delete_one({"_id": obj_id})
+    if resultado.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
+        
+    return {"mensaje": "Estudiante eliminado correctamente"}
 
 # Ruta para el Ping (Health Check)
 @app.get("/estado-servidor")
