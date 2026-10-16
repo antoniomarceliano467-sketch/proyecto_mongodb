@@ -429,8 +429,8 @@
 
         // 4. CERRAR SESIÓN
         function cerrarSesion() {
-            localStorage.removeItem('usuario_correo');
-            window.location.href = 'login.html';
+            localStorage.clear(); // Borra cualquier dato guardado
+            window.location.href = '/'; // Redirige a la pantalla de inicio (login)
         }
     </script>
 </body>
