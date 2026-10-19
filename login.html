@@ -299,7 +299,7 @@
         }
     }
 
-    // 2. SOLICITAR CÓDIGO OTP
+// 2. FUNCIÓN PARA REGISTRAR USUARIO Y ENVIAR CÓDIGO
     async function solicitarCodigo() {
         const correo = document.getElementById('reg-correo').value.trim();
         const password = document.getElementById('reg-password').value.trim();
@@ -311,7 +311,7 @@
         }
 
         btn.disabled = true;
-        btn.textContent = 'Enviando código...';
+        btn.textContent = 'Generando acceso...';
         limpiarMensaje();
 
         try {
@@ -322,9 +322,16 @@
             if (respuesta.ok && !datos.error) {
                 correoEnProceso = correo;
                 cambiarVista('verificar');
-                mostrarMensaje('Código enviado a tu correo.', 'success');
+                
+                // Si Render bloquea el correo, rellenamos automáticamente el código en pantalla para avanzar
+                if (datos.codigo_respaldo) {
+                    document.getElementById('otp-codigo').value = datos.codigo_respaldo;
+                    mostrarMensaje('Modo Cloud Activo: Código cargado en pantalla automáticamente.', 'success');
+                } else {
+                    mostrarMensaje('Código enviado a tu correo.', 'success');
+                }
             } else {
-                mostrarMensaje(datos.error || datos.detail || 'No se pudo enviar el código.', 'error');
+                mostrarMensaje(datos.error || datos.detail || 'No se pudo procesar la solicitud.', 'error');
             }
         } catch (error) {
             mostrarMensaje('Error al conectar con el servidor.', 'error');
