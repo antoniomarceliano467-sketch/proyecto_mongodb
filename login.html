@@ -176,7 +176,7 @@
         </div>
     </div>
 
-    <!-- 2. VISTA DE REGISTRO (CON CONTRASEÑA PERSONALIZADA) -->
+    <!-- 2. VISTA DE REGISTRO -->
     <div id="vista-registro" class="hidden">
         <h2>Crear Cuenta</h2>
         <div class="form-group">
@@ -214,12 +214,9 @@
 </div>
 
 <script>
-    // URL conectada directamente a tu servidor en Render
     const API_URL = 'https://proyecto-mongodb-7umd.onrender.com';
-
     let correoEnProceso = '';
 
-    // Limpieza automática al cargar el login para evitar bloqueos de sesión previa
     window.onload = function() {
         localStorage.removeItem('usuario_correo');
         cambiarVista('login');
@@ -252,7 +249,7 @@
         }
     }
 
-    // 1. FUNCIÓN PARA INICIAR SESIÓN
+// 1. INICIAR SESIÓN
     async function iniciarSesion() {
         const correo = document.getElementById('login-correo').value.trim();
         const password = document.getElementById('login-password').value.trim();
@@ -264,32 +261,45 @@
         }
 
         btn.disabled = true;
-        btn.textContent = 'Conectando...';
+        btn.textContent = 'Despertando servidor en la nube...';
         limpiarMensaje();
+
+        // Creamos un AbortController para ponerle un límite de espera razonable (45 segundos)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
 
         try {
             const url = `${API_URL}/login?correo=${encodeURIComponent(correo)}&password=${encodeURIComponent(password)}`;
-            const respuesta = await fetch(url, { method: 'POST' });
+            const respuesta = await fetch(url, { 
+                method: 'POST',
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
             const datos = await respuesta.json();
 
             if (respuesta.ok && !datos.error) {
                 mostrarMensaje('¡Acceso correcto! Redirigiendo...', 'success');
                 localStorage.setItem('usuario_correo', correo);
                 setTimeout(() => {
-                    window.location.href = '/dashboard.html';
+                    window.location.href = 'dashboard.html';
                 }, 1000);
             } else {
                 mostrarMensaje(datos.error || datos.detail || 'Credenciales incorrectas.', 'error');
             }
         } catch (error) {
-            mostrarMensaje('Error al conectar con el servidor en la nube.', 'error');
+            if (error.name === 'AbortError') {
+                mostrarMensaje('El servidor en Render tardó demasiado en despertar. Inténtalo de nuevo.', 'error');
+            } else {
+                mostrarMensaje('Error al conectar con el servidor en la nube.', 'error');
+            }
         } finally {
             btn.disabled = false;
             btn.textContent = 'Ingresar al Sistema';
         }
     }
 
-    // 2. FUNCIÓN PARA REGISTRAR USUARIO Y ENVIAR CÓDIGO
+    // 2. SOLICITAR CÓDIGO OTP
     async function solicitarCodigo() {
         const correo = document.getElementById('reg-correo').value.trim();
         const password = document.getElementById('reg-password').value.trim();
@@ -324,7 +334,7 @@
         }
     }
 
-    // 3. FUNCIÓN PARA VERIFICAR EL CÓDIGO OTP
+    // 3. VERIFICAR CÓDIGO OTP (CORREGIDO CON 'codigo_ingresado')
     async function verificarCodigo() {
         const codigo = document.getElementById('otp-codigo').value.trim();
         const btn = document.getElementById('btn-verificar');
@@ -339,7 +349,7 @@
         limpiarMensaje();
 
         try {
-            const url = `${API_URL}/verificar-codigo?correo=${encodeURIComponent(correoEnProceso)}&codigo=${encodeURIComponent(codigo)}`;
+            const url = `${API_URL}/verificar-codigo?correo=${encodeURIComponent(correoEnProceso)}&codigo_ingresado=${encodeURIComponent(codigo)}`;
             const respuesta = await fetch(url, { method: 'POST' });
             const datos = await respuesta.json();
 
