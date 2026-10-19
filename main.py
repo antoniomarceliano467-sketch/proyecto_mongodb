@@ -41,15 +41,14 @@ def enviar_codigo_correo(destinatario: str, codigo: str):
     msg.attach(MIMEText(cuerpo, 'plain'))
     
     try:
-        # Añadimos timeout=5 para evitar que Render congele el servidor
-        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=5)
-        server.starttls()
+        # Usamos SMTP_SSL y puerto 465 (Compatible con Render Cloud)
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10)
         server.login(EMAIL_REMITENTE, EMAIL_PASSWORD)
         server.send_message(msg)
         server.quit()
         return True
     except Exception as e:
-        print(f"Aviso SMTP (Bloqueado por Render Cloud): {e}")
+        print(f"Error SMTP (Puerto 465): {e}")
         return False
 
 @app.post("/solicitar-codigo")
@@ -65,12 +64,10 @@ async def solicitar_codigo(correo: str, password: str):
     
     exito = enviar_codigo_correo(correo, codigo_otp)
     
-    # Si Render bloquea el puerto SMTP, permitimos continuar enviando el mensaje de éxito
-    # para que puedas ver el código en tu base de datos o consola y avanzar con la prueba.
-    return {
-        "mensaje": "Código generado exitosamente",
-        "codigo_respaldo": codigo_otp 
-    }
+    if exito:
+        return {"mensaje": "Código enviado exitosamente a tu correo."}
+    else:
+        return {"error": "No se pudo enviar el correo de verificación. Inténtalo de nuevo."}
 # ==========================================
 # 4. RUTAS PARA MOSTRAR EL FRONTEND (HTML)
 # ==========================================
