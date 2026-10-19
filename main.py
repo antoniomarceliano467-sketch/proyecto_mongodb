@@ -62,12 +62,17 @@ async def solicitar_codigo(correo: str, password: str):
         upsert=True
     )
     
+    # Intentamos enviar el correo por Gmail
     exito = enviar_codigo_correo(correo, codigo_otp)
     
     if exito:
         return {"mensaje": "Código enviado exitosamente a tu correo."}
     else:
-        return {"error": "No se pudo enviar el correo de verificación. Inténtalo de nuevo."}
+        # Respaldo visual en la nube: si Render bloquea el puerto, te devuelve el código en pantalla
+        return {
+            "mensaje": f"Modo Cloud (Red bloqueada en Render). Tu código de verificación es: {codigo_otp}",
+            "codigo_respaldo": codigo_otp
+        }
 # ==========================================
 # 4. RUTAS PARA MOSTRAR EL FRONTEND (HTML)
 # ==========================================
